@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useRef } from 'react'
-import html2canvas from 'html2canvas'
+import { toPng } from 'html-to-image'
 
 function ResultPage({ selectedImage, selectedOverlay, userName }) {
     const navigate = useNavigate()
@@ -13,18 +13,32 @@ function ResultPage({ selectedImage, selectedOverlay, userName }) {
     const handleDownload = async () => {
         if (certificateRef.current) {
             try {
-                const canvas = await html2canvas(certificateRef.current, {
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: null,
-                    scale: 2
+                const dataUrl = await toPng(certificateRef.current, {
+                    quality: 1.0,
+                    pixelRatio: 2,
+                    skipAutoScale: true,
+                    filter: (node) => {
+                        // Skip any nodes that might cause issues
+                        return true
+                    }
                 })
                 const link = document.createElement('a')
                 link.download = `certificate-${userName || 'user'}.png`
-                link.href = canvas.toDataURL('image/png')
+                link.href = dataUrl
                 link.click()
             } catch (error) {
                 console.error('Error generating image:', error)
+                // Fallback: try again with simpler settings
+                try {
+                    const dataUrl = await toPng(certificateRef.current)
+                    const link = document.createElement('a')
+                    link.download = `certificate-${userName || 'user'}.png`
+                    link.href = dataUrl
+                    link.click()
+                } catch (fallbackError) {
+                    console.error('Fallback also failed:', fallbackError)
+                    alert('Unable to download. Please take a screenshot instead.')
+                }
             }
         }
     }
@@ -32,26 +46,63 @@ function ResultPage({ selectedImage, selectedOverlay, userName }) {
     const handlePrint = async () => {
         if (certificateRef.current) {
             try {
-                const canvas = await html2canvas(certificateRef.current, {
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: null,
-                    scale: 2
+                const dataUrl = await toPng(certificateRef.current, {
+                    quality: 1.0,
+                    pixelRatio: 2
                 })
                 const printWindow = window.open('', '_blank')
                 if (printWindow) {
                     printWindow.document.write(`
                         <html>
                             <head>
-                                <title>Certificate - ${userName}</title>
+                                <title></title>
                                 <style>
-                                    body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-                                    img { max-width: 100%; height: auto; }
-                                    @media print { body { margin: 0; } img { width: 100%; } }
+                                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                                    html, body { 
+                                        width: 100%; 
+                                        height: 100%; 
+                                        margin: 0; 
+                                        padding: 0;
+                                        background: white;
+                                    }
+                                    body { 
+                                        display: flex; 
+                                        justify-content: center; 
+                                        align-items: center;
+                                    }
+                                    img { 
+                                        max-width: 96%; 
+                                        max-height: 100vh; 
+                                        object-fit: contain;
+                                    }
+                                    @page { 
+                                        size: landscape; 
+                                        margin: 0; 
+                                    }
+                                    @media print { 
+                                        @page {
+                                            size: landscape;
+                                            margin: 0;
+                                        }
+                                        html, body { 
+                                            width: 100%; 
+                                            height: 100%; 
+                                            margin: 0 !important; 
+                                            padding: 0 !important;
+                                            background: white !important;
+                                            -webkit-print-color-adjust: exact;
+                                            print-color-adjust: exact;
+                                        }
+                                        img { 
+                                            width: 96%; 
+                                            height: auto;
+                                            max-height: 100%;
+                                        }
+                                    }
                                 </style>
                             </head>
                             <body>
-                                <img src="${canvas.toDataURL('image/png')}" />
+                                <img src="${dataUrl}" />
                             </body>
                         </html>
                     `)
@@ -62,6 +113,7 @@ function ResultPage({ selectedImage, selectedOverlay, userName }) {
                 }
             } catch (error) {
                 console.error('Error printing:', error)
+                alert('Unable to print. Please take a screenshot instead.')
             }
         }
     }
@@ -89,23 +141,29 @@ function ResultPage({ selectedImage, selectedOverlay, userName }) {
 
             {/* Combined result */}
             <div className="relative max-w-2xl w-full bg-gray-800/50 rounded-2xl p-4 backdrop-blur-sm border border-gray-700/50">
-                <div ref={certificateRef} className="relative" style={{ backgroundColor: '#ffffff' }}>
+                <div
+                    ref={certificateRef}
+                    className="relative"
+                    style={{ backgroundColor: '#ffffff' }}
+                >
                     {/* Base frame image */}
                     <img
                         src={selectedImage.src}
                         alt={selectedImage.name}
-                        className="w-full object-contain rounded-xl"
-                        crossOrigin="anonymous"
+                        className="w-full object-contain"
+                        style={{ display: 'block' }}
                     />
 
                     {/* User's name rendered on the certificate */}
                     <div
-                        className="absolute text-gray-700 font-medium pointer-events-none"
                         style={{
-                            bottom: '11%',
+                            position: 'absolute',
+                            bottom: '14%',
                             left: '33%',
                             fontSize: 'clamp(10px, 2vw, 18px)',
-                            fontFamily: 'Arial, sans-serif'
+                            fontFamily: 'Arial, sans-serif',
+                            color: '#374151',
+                            fontWeight: '500'
                         }}
                     >
                         {userName}
@@ -115,14 +173,14 @@ function ResultPage({ selectedImage, selectedOverlay, userName }) {
                     <img
                         src={selectedOverlay.src}
                         alt={selectedOverlay.name}
-                        className="absolute object-contain rounded-xl"
-                        crossOrigin="anonymous"
                         style={{
+                            position: 'absolute',
                             width: '50%',
                             height: '60%',
                             bottom: '27%',
                             left: '20%',
-                            transform: 'translateX(-50%)'
+                            transform: 'translateX(-50%)',
+                            objectFit: 'contain'
                         }}
                     />
                 </div>
