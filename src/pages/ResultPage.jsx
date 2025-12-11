@@ -35,7 +35,7 @@ function ResultPage({ selectedImage, selectedOverlay, userName }) {
                 ctx.font = `500 ${fontSize}px Arial, sans-serif`
                 ctx.fillStyle = '#374151'
                 const nameX = canvas.width * 0.33
-                const nameY = canvas.height * 0.86
+                const nameY = canvas.height * 0.84
                 ctx.fillText(userName || '', nameX, nameY)
 
                 // Load and draw the overlay image
