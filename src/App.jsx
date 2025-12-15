@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import TemplateSelector from './components/TemplateSelector';
 import CameraCapture from './components/CameraCapture';
 import ImageComposer from './components/ImageComposer';
@@ -9,6 +9,22 @@ function App() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [capturedFile, setCapturedFile] = useState(null);
   const [finalImage, setFinalImage] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Toggle fullscreen mode
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (err) {
+      console.error('Fullscreen toggle error:', err);
+    }
+  }, []);
 
   // Step 1: Template Selection
   const handleTemplateSelect = (template) => {
@@ -50,7 +66,11 @@ function App() {
 
       {/* Header */}
       <header className="mb-8 text-center">
-        <h1 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-300 mb-2">
+        <h1
+          onClick={toggleFullscreen}
+          className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-300 mb-2 cursor-pointer hover:scale-105 transition-transform select-none"
+          title={isFullscreen ? "Click to exit fullscreen" : "Click to enter fullscreen"}
+        >
           Photo Booth
         </h1>
         <p className="text-purple-200/70">Create your personalized frame in seconds</p>

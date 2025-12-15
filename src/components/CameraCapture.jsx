@@ -140,9 +140,9 @@ function CameraCapture({ onCapture, onBack }) {
                 </div>
             )}
 
-            {/* Camera View */}
+            {/* Camera View - Square aspect ratio */}
             {(isCameraActive || isLoading) && (
-                <div className="w-full mb-4 relative overflow-hidden rounded-xl bg-black aspect-video">
+                <div className="w-full mb-4 relative overflow-hidden rounded-xl bg-black aspect-square">
                     {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-purple-900/80">
                             <div className="flex flex-col items-center gap-3">
