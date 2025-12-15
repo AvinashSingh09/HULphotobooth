@@ -142,8 +142,8 @@ function OverlayPage({ selectedImage, onSelectOverlay }) {
                 onClick={handleSelectFromDevice}
                 disabled={isProcessing}
                 className={`group flex flex-col items-center gap-4 p-8 bg-gray-800/50 rounded-2xl backdrop-blur-sm border-2 border-dashed transition-all duration-300 cursor-pointer ${isProcessing
-                        ? 'border-gray-600 opacity-50 cursor-wait'
-                        : 'border-gray-600 hover:border-orange-500 hover:shadow-2xl hover:shadow-orange-500/20'
+                    ? 'border-gray-600 opacity-50 cursor-wait'
+                    : 'border-gray-600 hover:border-orange-500 hover:shadow-2xl hover:shadow-orange-500/20'
                     }`}
             >
                 <div className={`w-20 h-20 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full flex items-center justify-center transition-transform ${isProcessing ? '' : 'group-hover:scale-110'

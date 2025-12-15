@@ -1,16 +1,73 @@
-# React + Vite
+# HUL Photo Booth
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A mobile-first web application for capturing photos and compositing them into branded frames — designed for events, conferences, and brand activations.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Template Selection** – Choose from pre-configured branded frames
+- **Native Camera Capture** – Uses device camera on mobile (iOS/Android)
+- **Auto-Composition** – Captured photos are automatically placed into the frame
+- **Download & Print** – Export final image as PNG or send directly to printer
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** + **Vite 7**
+- **Tailwind CSS 4** (via @tailwindcss/vite plugin)
+- **HTML5 Canvas** for image composition
+- Fully client-side — no backend required
 
-## Expanding the ESLint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── App.jsx                    # Main app with step-based flow
+├── components/
+│   ├── TemplateSelector.jsx   # Frame selection UI
+│   ├── CameraCapture.jsx      # Native camera/file input
+│   ├── ImageComposer.jsx      # Canvas compositing logic
+│   └── OutputActions.jsx      # Download/Print buttons
+public/
+└── HUL PNG.png                # Template frame asset
+```
+
+## 📱 Mobile Usage
+
+For best results on mobile:
+1. Open the app URL on your phone
+2. Tap the template to select it
+3. Use "Take Photo" to open native camera
+4. Download or print your framed photo
+
+## 🎨 Customization
+
+**Adding new templates:**
+1. Add your PNG frame to `public/`
+2. Update the `templates` array in `src/components/TemplateSelector.jsx`
+
+**Adjusting photo placement:**
+Edit `INITIAL_CONFIG` in `src/components/ImageComposer.jsx`:
+```js
+const INITIAL_CONFIG = {
+  x: 230,      // Horizontal position
+  y: 705,      // Vertical position
+  width: 1035, // Photo width
+  height: 1140 // Photo height
+};
+```
+
+## 📄 License
+
+MIT
