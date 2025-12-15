@@ -72,7 +72,11 @@ function CameraCapture({ onCapture, onBack }) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
-        // Draw the current video frame to canvas
+        // Flip the canvas horizontally to match the flipped video display
+        context.translate(canvas.width, 0);
+        context.scale(-1, 1);
+
+        // Draw the current video frame to canvas (flipped)
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         // Convert canvas to blob and create a File object
@@ -157,6 +161,7 @@ function CameraCapture({ onCapture, onBack }) {
                         playsInline
                         muted
                         className="w-full h-full object-cover"
+                        style={{ transform: 'scaleX(-1)' }}
                     />
 
                     {/* Camera overlay */}
