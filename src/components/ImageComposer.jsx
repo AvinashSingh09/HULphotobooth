@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
 
-// Calibrated values from user testing
+// Calibrated values - ADJUST THESE FOR YOUR TEMPLATE
+// Use the calibration sliders to find the right values, then update here
 const INITIAL_CONFIG = {
-    x: 230,
-    y: 705,
-    width: 1035,
-    height: 1140,
+    x: 85,       // Photo X position (pixels from left)
+    y: 390,      // Photo Y position (pixels from top)
+    width: 720,  // Photo width
+    height: 880, // Photo height
 };
 
 function ImageComposer({ templateSrc, capturedFile, onCompositionComplete, onRetake }) {
@@ -22,7 +23,7 @@ function ImageComposer({ templateSrc, capturedFile, onCompositionComplete, onRet
     useEffect(() => {
         if (!templateSrc || !capturedFile) return;
         generateComposite();
-    }, [templateSrc, capturedFile, config]); // Re-run when config changes
+    }, [templateSrc, capturedFile, config]);
 
     const generateComposite = async () => {
         setIsProcessing(true);
@@ -47,17 +48,12 @@ function ImageComposer({ templateSrc, capturedFile, onCompositionComplete, onRet
             // 2. Draw Template ON TOP (Foreground / Frame)
             ctx.drawImage(templateImg, 0, 0);
 
-            // 3. (Optional) Draw Debug Box if calibration is open
-            /* 
+            // 3. Draw Debug Box if calibration is open
             if (showCalibration) {
-              ctx.strokeStyle = "red";
-              ctx.lineWidth = 5;
-              ctx.strokeRect(config.x, config.y, config.width, config.height);
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 5;
+                ctx.strokeRect(config.x, config.y, config.width, config.height);
             }
-            */
-            // No, we don't want the red box in the final output even during calibration if we want to preview quality.
-            // But for alignment it helps. Let's decide: we see the photo, so we know where it is. 
-            // We don't need a red box.
 
             const finalDataUrl = canvas.toDataURL('image/png', 1.0);
             setPreviewUrl(finalDataUrl);
@@ -78,11 +74,22 @@ function ImageComposer({ templateSrc, capturedFile, onCompositionComplete, onRet
         }));
     };
 
+    const copyConfigToClipboard = () => {
+        const configStr = `const INITIAL_CONFIG = {
+    x: ${config.x},
+    y: ${config.y},
+    width: ${config.width},
+    height: ${config.height},
+};`;
+        navigator.clipboard.writeText(configStr);
+        alert('Config copied to clipboard! Paste it in ImageComposer.jsx');
+    };
+
     return (
         <div className="flex flex-col items-center w-full max-w-sm mx-auto p-4">
             <h2 className="text-2xl font-bold text-white mb-4">Your Photo</h2>
 
-            {/* Preview Area - Compact */}
+            {/* Preview Area */}
             <div className="relative w-full bg-gray-800 rounded-lg overflow-hidden shadow-2xl">
                 {isProcessing ? (
                     <div className="flex items-center justify-center h-64">
@@ -92,6 +99,101 @@ function ImageComposer({ templateSrc, capturedFile, onCompositionComplete, onRet
                     <img src={previewUrl} alt="Composite Preview" className="w-full h-auto" />
                 )}
             </div>
+
+            {/* Calibration Toggle Button */}
+            <button
+                onClick={() => setShowCalibration(!showCalibration)}
+                className="mt-4 text-sm text-purple-300 hover:text-white underline"
+            >
+                {showCalibration ? 'Hide Calibration' : '🔧 Adjust Photo Position'}
+            </button>
+
+            {/* Calibration Controls */}
+            {showCalibration && (
+                <div className="w-full mt-4 p-4 bg-purple-900/60 rounded-xl border border-purple-500/30">
+                    <h3 className="text-white font-bold mb-3 text-center">📐 Position Calibration</h3>
+                    <p className="text-purple-200/70 text-xs mb-4 text-center">
+                        Template: {templateDimensions.w} × {templateDimensions.h}px
+                    </p>
+
+                    <div className="space-y-3">
+                        <div>
+                            <label className="text-purple-200 text-sm flex justify-between">
+                                <span>X Position</span>
+                                <span className="text-cyan-400">{config.x}px</span>
+                            </label>
+                            <input
+                                type="range"
+                                name="x"
+                                min="0"
+                                max={templateDimensions.w}
+                                value={config.x}
+                                onChange={handleConfigChange}
+                                className="w-full accent-cyan-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-purple-200 text-sm flex justify-between">
+                                <span>Y Position</span>
+                                <span className="text-cyan-400">{config.y}px</span>
+                            </label>
+                            <input
+                                type="range"
+                                name="y"
+                                min="0"
+                                max={templateDimensions.h}
+                                value={config.y}
+                                onChange={handleConfigChange}
+                                className="w-full accent-cyan-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-purple-200 text-sm flex justify-between">
+                                <span>Width</span>
+                                <span className="text-cyan-400">{config.width}px</span>
+                            </label>
+                            <input
+                                type="range"
+                                name="width"
+                                min="100"
+                                max={templateDimensions.w}
+                                value={config.width}
+                                onChange={handleConfigChange}
+                                className="w-full accent-cyan-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="text-purple-200 text-sm flex justify-between">
+                                <span>Height</span>
+                                <span className="text-cyan-400">{config.height}px</span>
+                            </label>
+                            <input
+                                type="range"
+                                name="height"
+                                min="100"
+                                max={templateDimensions.h}
+                                value={config.height}
+                                onChange={handleConfigChange}
+                                className="w-full accent-cyan-500"
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={copyConfigToClipboard}
+                        className="mt-4 w-full py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-lg font-medium text-sm hover:scale-105 transition-transform"
+                    >
+                        📋 Copy Config Values
+                    </button>
+
+                    <p className="text-purple-300/50 text-xs mt-2 text-center">
+                        Red box shows photo placement area
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
@@ -108,7 +210,7 @@ const loadImage = (src) => {
 };
 
 /**
- * Validates and mimics object-fit: cover for canvas
+ * Mimics object-fit: cover for canvas
  */
 function drawImageProp(ctx, img, x, y, w, h, offsetX, offsetY) {
     if (arguments.length === 2) {
@@ -117,11 +219,9 @@ function drawImageProp(ctx, img, x, y, w, h, offsetX, offsetY) {
         h = ctx.canvas.height;
     }
 
-    // default offset is center
     offsetX = typeof offsetX === "number" ? offsetX : 0.5;
     offsetY = typeof offsetY === "number" ? offsetY : 0.5;
 
-    // keep bounds [0.0, 1.0]
     if (offsetX < 0) offsetX = 0;
     if (offsetY < 0) offsetY = 0;
     if (offsetX > 1) offsetX = 1;
@@ -130,30 +230,26 @@ function drawImageProp(ctx, img, x, y, w, h, offsetX, offsetY) {
     var iw = img.width,
         ih = img.height,
         r = Math.min(w / iw, h / ih),
-        nw = iw * r,   // new prop. width
-        nh = ih * r,   // new prop. height
+        nw = iw * r,
+        nh = ih * r,
         cx, cy, cw, ch, ar = 1;
 
-    // decide which gap to fill
     if (nw < w) ar = w / nw;
-    if (Math.abs(ar - 1) < 1e-14 && nh < h) ar = h / nh;  // updated
+    if (Math.abs(ar - 1) < 1e-14 && nh < h) ar = h / nh;
     nw *= ar;
     nh *= ar;
 
-    // calc source rectangle
     cw = iw / (nw / w);
     ch = ih / (nh / h);
 
     cx = (iw - cw) * offsetX;
     cy = (ih - ch) * offsetY;
 
-    // make sure source rectangle is valid
     if (cx < 0) cx = 0;
     if (cy < 0) cy = 0;
     if (cw > iw) cw = iw;
     if (ch > ih) ch = ih;
 
-    // fill image in dest. rectangle
     ctx.drawImage(img, cx, cy, cw, ch, x, y, w, h);
 }
 
